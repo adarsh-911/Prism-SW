@@ -8,7 +8,7 @@
 
 namespace gl
 {
-    void init()
+    inline void init()
     {
         ;
     }
