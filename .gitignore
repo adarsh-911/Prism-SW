@@ -2,3 +2,4 @@
 depends/glfw-3.4/
 emu/
 build/
+.DS_Store
