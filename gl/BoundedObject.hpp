@@ -10,7 +10,7 @@ namespace gl
     class BoundedGeometry
     {
         public:
-            virtual glm::AABB getBoundingBox();
+            virtual glm::AABB getBoundingBox() const = 0;
     };
 }
 

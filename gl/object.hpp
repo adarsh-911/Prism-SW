@@ -2,6 +2,7 @@
 
 #include <iostream>
 
+#include "BoundedObject.hpp"
 #include "model.hpp"
 
 namespace gl
@@ -9,6 +10,7 @@ namespace gl
     class Object : public BoundedGeometry
     {
         private:
+            Model* model;
             glm::mat4 rotation;
 
             glm::vec3 total_force;
@@ -16,15 +18,6 @@ namespace gl
 
             // has the geometry been updated?
             bool has_geometry_updated = false;
-
-            // model veritces without any transformation
-            vertex_buffer_t intial_vertices;
-
-            size_t model_vertex_offset;
-            size_t vertex_cnt;
-
-            size_t model_index_offset;
-            size_t triangle_cnt;
 
             // current bounding box
             glm::AABB boundingBox;
@@ -46,10 +39,10 @@ namespace gl
             float mass;
             glm::vec3 velocity;
         public:
-            Object() : mass(1.0f), currScale(1.0f) {};
+            Object() : currScale(1.0f), mass(1.0f) {};
 
             // laod a object from .obj file
-            void from_file(const std::string filepath);
+            void from_model(Model& model);
 
             // set positon of the object
             inline void set_position(glm::vec3 position) { this->has_geometry_updated = true; this->currPosition = position; }
@@ -75,10 +68,13 @@ namespace gl
             void apply_impulse(glm::vec3 impulse);
 
             // get the matrix appyling all the transformations done to it
-            glm::mat4 get_model_matrix();
+            glm::mat4 get_model_matrix() const;
 
             // get the bounding box of the object
-            glm::AABB getBoundingBox();
+            glm::AABB getBoundingBox() const override;
+
+            // draw the object
+            void draw() const;
 
             ~Object() = default;
     };

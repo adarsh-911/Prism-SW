@@ -13,8 +13,7 @@ namespace gp
         glm::vec2 texture_uv;
 
         vertex_t() = default;
-    } __attribute__((__packed__));
-
+    };
 
     typedef uint16_t index_t;
     typedef uint16_t model_id_t;

@@ -21,7 +21,8 @@ namespace gl
 
         this->obj_name_map[object_name] = this->scene_models.size();
 
-        this->scene_objects.push_back(Object(model));
+        this->scene_objects.push_back(Object());
+        this->scene_objects.back().from_model(*model);
 
         return &this->scene_objects.back();
     }

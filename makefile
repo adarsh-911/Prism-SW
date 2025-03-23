@@ -25,7 +25,7 @@ RELEASE_DIR := $(BUILD_DIR)/release
 # leave 2nd arg empty to search from this directory
 rwildcard=$(wildcard $1$2) $(foreach d,$(wildcard $1*),$(call rwildcard,$d/,$2))
 
-EXCLUDE := gl/%.cpp
+EXCLUDE := #gl/%.cpp
 
 DEBUG_SRC_CPP := $(filter-out $(EXCLUDE),$(call rwildcard,,*.cpp))
 DEBUG_OBJ_CPP := $(patsubst %.cpp, $(DEBUG_DIR)/objs/%.o, $(DEBUG_SRC_CPP))

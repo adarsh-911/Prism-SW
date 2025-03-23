@@ -5,6 +5,11 @@
 
 namespace gl
 {
+    void Object::from_model(Model& model)
+    {
+        this->model = &model;
+    }
+
     void Object::rotate(glm::vec3 axis, float angle_in_radians)
     {
         this->has_geometry_updated = true;
@@ -32,18 +37,12 @@ namespace gl
     void Object::geometry_update()
     {
         if(!this->has_geometry_updated) return;
-
-        this->boundingBox.setNull();
-
-        for(size_t i = 0; i < this->vertex_cnt; i++)
+        if(!this->model)
         {
-            auto vertex = this->intial_vertices[i];
-            auto transformed_vertex = glm::vec3(this->get_model_matrix() * glm::vec4(vertex.position, 1.0f));
-
-            this->boundingBox.extend(transformed_vertex);
-            globalVertexBuffer[this->model_vertex_offset + i].position = transformed_vertex;
+            PANIC("No model set for object");
+            return;
         }
-
+        this->boundingBox = this->model->bounding_box(this->get_model_matrix());
         this->has_geometry_updated = false;
     }
     void Object::apply_force(glm::vec3 force)
@@ -54,15 +53,23 @@ namespace gl
     {
         this->total_impluse += impulse;
     }
-    glm::mat4 Object::get_model_matrix()
+    glm::mat4 Object::get_model_matrix() const
     {
         auto translation = glm::translate(glm::mat4(1.0f), this->position);
         auto scale = glm::scale(glm::mat4(1.0f), this->scale);
 
         return translation * rotation * scale;
     }
-    glm::AABB Object::getBoundingBox()
+    glm::AABB Object::getBoundingBox() const
     {
         return this->boundingBox;
+    }
+    void Object::draw() const
+    {
+        gp::uniform_t uniform;
+        uniform.model = this->get_model_matrix();
+        uniform.texture_id = 0;
+
+        this->model->draw(uniform);
     }
 }
