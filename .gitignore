@@ -1,4 +1,4 @@
 .vscode/
 depends/glfw-3.4/
-test/
 emu/
+build/

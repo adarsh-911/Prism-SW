@@ -1,6 +1,6 @@
 #include "disp.hpp"
 
-#include <panic.hpp>
+#include <global/panic.hpp>
 
 namespace drivers::disp
 {

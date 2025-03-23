@@ -1,8 +1,7 @@
-#include <iostream>
-#include "gl/gl.hpp"
-#include "depends/obj-loader/obj_loader.cpp"
-#include "emu/opengl_renderer.hpp"
+#include "test/test.hpp"
 
-int main() {   
-    return 0;
+int main()
+{
+    return local_test();
 }
+

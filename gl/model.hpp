@@ -11,11 +11,13 @@ namespace gl
     class Model
     {
         public:
-            std::vector<Triangle> triangle_buffer;
+            vertex_buffer_t vertices;
+            index_buffer_t indices;
 
             Model();
 
-            glm::AABB getBoundingBox(glm::mat4 model_mat);
+            // load a object from .obj file
+            void from_file(const std::string filepath);
 
             ~Model();
     };
