@@ -1,0 +1,6 @@
+This is a placeholder file for the arch directory.  It is not necessary to
+have this file in the repository, but it is included to make sure the arch
+directory is created when the repository is checked out.
+
+The arch directory will contain platform specific functions(like AXI output and the like)
+
