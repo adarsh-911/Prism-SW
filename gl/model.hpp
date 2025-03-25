@@ -11,12 +11,12 @@ namespace gl
 {
     class Model
     {
-        private:
+        public:
             gp::vertex_buffer_t vertices;
             gp::index_buffer_t indices;
             
             gp::model_id_t backend_handle;
-        public:
+        
             Model() = default;
 
             // load a object from .obj file

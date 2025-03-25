@@ -1,12 +1,31 @@
 #include "model.hpp"
 
 #include <global/panic.hpp>
+#include "gl/obj_loader.hpp"
 
 namespace gl
 {
     void Model::from_file(const std::string filepath)
     {
-        // TODO: load from object file
+        // Check file extension to determine type
+        size_t dot_pos = filepath.find_last_of('.');
+        if (dot_pos == std::string::npos) {
+            PANIC("Invalid file format for model: " + filepath);
+            return;
+        }
+        
+        std::string extension = filepath.substr(dot_pos + 1);
+        
+        for (auto& c : extension) c = std::tolower(c);
+        
+        if (extension == "obj") {
+            // Load OBJ file
+            if (!OBJLoader::loadOBJ(filepath, this, this->vertices, this->indices, this->backend_handle)) {
+                PANIC("Failed to load OBJ file: " + filepath);
+            }
+        } else {
+            PANIC("Unsupported model file format: " + extension);
+        }
     }
 
     glm::AABB Model::bounding_box(glm::mat4 model) const

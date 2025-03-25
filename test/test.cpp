@@ -7,11 +7,24 @@
 
 #define USE_OPENGL_BACKEND
 #include <graphics/gp.hpp>
+#include "gl/obj_loader.hpp"
 
 int local_test()
 {
     gp::OpenGLDisplay display;
     display.init();
+
+
+    // This code works! Can load models from obj files
+    /*
+    auto model_obj = gl::Model();
+    model_obj.from_file("../Y10/Prism/Prism-Assets/models/chair/chair.obj"); 
+    // Replace with actual path when submodules are properly set up
+
+    gp::vertex_buffer_t vertices = model_obj.vertices;
+    gp::index_buffer_t indices = model_obj.indices;
+    */
+
 
     // triangle vertices
     gp::vertex_buffer_t vertices = {
