@@ -1,7 +1,5 @@
 #include "i2cZync.hpp"
-#include <system_error>
 #include <cstring>
-#include <cerrno>
 
 namespace drivers::i2c {
 
@@ -15,24 +13,18 @@ I2C_Zynq::~I2C_Zynq() {
 
 bool I2C_Zynq::initialize(const std::string& device, uint8_t default_address) {
     _devicePath = device;
-    
-    // Open I2C device
     _i2cFile = open(_devicePath.c_str(), O_RDWR);
     if (_i2cFile < 0) {
         return false;
     }
-    
-    // Set default slave address
     return setSlaveAddress(default_address);
 }
 
 bool I2C_Zynq::setSlaveAddress(uint8_t address) {
     if (_i2cFile < 0) return false;
-    
     if (ioctl(_i2cFile, I2C_SLAVE, address) < 0) {
         return false;
     }
-    
     _currentAddress = address;
     return true;
 }
@@ -46,7 +38,6 @@ bool I2C_Zynq::writeBytes(uint8_t reg, const uint8_t* values, uint16_t length) {
     uint8_t* buffer = new uint8_t[length + 1];
     buffer[0] = reg;
     memcpy(buffer + 1, values, length);
-    
     bool result = (write(_i2cFile, buffer, length + 1) == (length + 1));
     delete[] buffer;
     return result;
@@ -74,27 +65,19 @@ bool I2C_Zynq::writeThenRead(uint8_t reg, uint8_t* writeData, uint16_t writeLeng
                             uint8_t* readData, uint16_t readLength) {
     struct i2c_msg messages[2];
     struct i2c_rdwr_ioctl_data packet;
-    
-    // Write message
     messages[0].addr = _currentAddress;
-    messages[0].flags = 0; // Write
+    messages[0].flags = 0;
     messages[0].len = writeLength + 1;
     uint8_t* writeBuffer = new uint8_t[writeLength + 1];
     writeBuffer[0] = reg;
     memcpy(writeBuffer + 1, writeData, writeLength);
     messages[0].buf = writeBuffer;
-    
-    // Read message
     messages[1].addr = _currentAddress;
-    messages[1].flags = I2C_M_RD; // Read
+    messages[1].flags = I2C_M_RD;
     messages[1].len = readLength;
     messages[1].buf = readData;
-    
-    // Prepare packet
     packet.msgs = messages;
     packet.nmsgs = 2;
-    
-    // Execute transaction
     bool result = (ioctl(_i2cFile, I2C_RDWR, &packet) >= 0);
     delete[] writeBuffer;
     return result;
@@ -102,8 +85,6 @@ bool I2C_Zynq::writeThenRead(uint8_t reg, uint8_t* writeData, uint16_t writeLeng
 
 bool I2C_Zynq::_checkDevice() {
     if (_i2cFile < 0) return false;
-    
-    // Try a simple read to check if device responds
     uint8_t dummy;
     return (read(_i2cFile, &dummy, 1) == 1);
 }

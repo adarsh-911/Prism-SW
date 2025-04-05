@@ -4,7 +4,6 @@
 
 namespace drivers::gyro {
 
-// Constructor now initializes with I2C reference
 LSM6DSL::LSM6DSL(drivers::i2c::I2C_Zynq& i2c) : 
     _i2c(i2c),
     currentGyroFS(GYRO_FS_245),
@@ -12,31 +11,21 @@ LSM6DSL::LSM6DSL(drivers::i2c::I2C_Zynq& i2c) :
 }
 
 bool LSM6DSL::init() {
-    // Set I2C slave address
     if (!_i2c.setSlaveAddress(I2C_ADDRESS)) {
         return false;
     }
 
-    // Check device ID
     uint8_t id = readId();
     if (id != DEVICE_ID) {
         return false;
     }
     
-    // Reset all registers
     writeRegister(CTRL3_C, 0x01);
-    
-    // Wait for reset to complete (datasheet says 100us typical)
     std::this_thread::sleep_for(std::chrono::milliseconds(1));
     
-    // Configure default settings
-    // Enable Block Data Update (BDU) and address auto-increment
     writeRegister(CTRL3_C, 0x44);
     
-    // Configure gyroscope by default: 104 Hz, 245 dps
     configGyroscope(ODR_104_HZ, GYRO_FS_245);
-    
-    // Configure accelerometer by default: 104 Hz, 2g
     configAccelerometer(ODR_104_HZ, ACC_FS_2G);
     
     return true;
@@ -76,7 +65,6 @@ void LSM6DSL::setAccLowPower(bool enable) {
     writeRegister(CTRL6_C, ctrl);
 }
 
-// Data reading implementations (unchanged from your original)
 void LSM6DSL::readGyro(float &x, float &y, float &z) {
     int16_t rawX, rawY, rawZ;
     readGyroRaw(rawX, rawY, rawZ);
@@ -117,7 +105,6 @@ void LSM6DSL::readAccelRaw(int16_t &x, int16_t &y, int16_t &z) {
     z = (int16_t)(buffer[5] << 8 | buffer[4]);
 }
 
-// Sensitivity functions (unchanged)
 float LSM6DSL::getGyroSensitivity(GyroFullScale fs) {
     switch (fs) {
         case GYRO_FS_245: return 0.00875f;
@@ -138,7 +125,6 @@ float LSM6DSL::getAccelSensitivity(AccFullScale fs) {
     }
 }
 
-// I2C communication implementations using our Zynq I2C driver
 uint8_t LSM6DSL::readRegister(uint8_t reg) {
     return _i2c.readByte(reg);
 }

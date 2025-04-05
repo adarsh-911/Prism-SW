@@ -1,16 +1,54 @@
+// ========================================================================================
+// LSM6DSL - Driver for STMicroelectronics LSM6DSL IMU (Gyroscope + Accelerometer)
+// ----------------------------------------------------------------------------------------
+// This class provides an abstraction layer for interfacing with the LSM6DSL sensor
+// over I2C using the I2C_Zynq driver. It supports both raw data access and converted
+// float values (in dps/g).
+//
+// Features:
+// - Device initialization and identity check (WHO_AM_I)
+// - Configuration of gyroscope and accelerometer:
+//      * Data rate (ODR)
+//      * Full-scale range
+//      * Low power modes
+// - Read raw or scaled gyroscope and accelerometer data on X, Y, and Z axes
+//
+// Usage:
+// 1. Pass a reference to an initialized I2C_Zynq object to the constructor.
+// 2. Call `init()` to check communication and prepare the sensor.
+// 3. Use `configGyroscope()` and `configAccelerometer()` to set ODR and FS.
+// 4. Use `readGyro()` / `readAccel()` for float readings,
+//    or `readGyroRaw()` / `readAccelRaw()` for raw 16-bit integers.
+//
+// Example:
+//     drivers::i2c::I2C_Zynq i2c;
+//     i2c.initialize("/dev/i2c-1", LSM6DSL::I2C_ADDRESS);
+//     drivers::gyro::LSM6DSL imu(i2c);
+//     imu.init();
+//     imu.configGyroscope(LSM6DSL::ODR_104_HZ, LSM6DSL::GYRO_FS_500);
+//     imu.configAccelerometer(LSM6DSL::ODR_104_HZ, LSM6DSL::ACC_FS_4G);
+//     float gx, gy, gz;
+//     imu.readGyro(gx, gy, gz);
+//
+// Notes:
+// - Sensitivities are internally calculated based on full-scale settings.
+// - This driver assumes a little-endian host.
+// - You may need to apply rotation or calibration depending on your hardware mounting.
+//
+// Author: Prajwal M
+// ========================================================================================
+
 #pragma once
 
 #include <cstdint>
-#include "i2cZync.hpp"  // Include our I2C driver
+#include "i2cZync.hpp"
 
 namespace drivers::gyro {
 
 class LSM6DSL {
 public:
-    // I2C address (low)
     static constexpr uint8_t I2C_ADDRESS = 0x6A;
 
-    // Register addresses (unchanged from your original)
     static constexpr uint8_t WHO_AM_I      = 0x0F;
     static constexpr uint8_t CTRL1_XL      = 0x10;
     static constexpr uint8_t CTRL2_G       = 0x11;
@@ -30,10 +68,8 @@ public:
     static constexpr uint8_t OUTZ_L_XL     = 0x2C;
     static constexpr uint8_t OUTZ_H_XL     = 0x2D;
 
-    // Device ID value
     static constexpr uint8_t DEVICE_ID     = 0x6A;
 
-    // Gyroscope full-scale selection (unchanged)
     enum GyroFullScale {
         GYRO_FS_245  = 0x00,
         GYRO_FS_500  = 0x04,
@@ -41,7 +77,6 @@ public:
         GYRO_FS_2000 = 0x0C
     };
 
-    // Accelerometer full-scale selection (unchanged)
     enum AccFullScale {
         ACC_FS_2G  = 0x00,
         ACC_FS_4G  = 0x08,
@@ -49,7 +84,6 @@ public:
         ACC_FS_16G = 0x04
     };
 
-    // Output data rate (unchanged)
     enum DataRate {
         ODR_POWER_DOWN = 0x00,
         ODR_12_5_HZ    = 0x10,
@@ -64,35 +98,28 @@ public:
         ODR_6660_HZ    = 0xA0
     };
 
-    // Constructor now takes I2C interface reference
     explicit LSM6DSL(drivers::i2c::I2C_Zynq& i2c);
 
-    // Initialization
     bool init();
     uint8_t readId();
 
-    // Configuration
     void configGyroscope(DataRate dataRate, GyroFullScale fullScale);
     void configAccelerometer(DataRate dataRate, AccFullScale fullScale);
     
-    // Low power mode
     void setGyroLowPower(bool enable);
     void setAccLowPower(bool enable);
     
-    // Read sensor data
     void readGyro(float &x, float &y, float &z);
     void readAccel(float &x, float &y, float &z);
     void readGyroRaw(int16_t &x, int16_t &y, int16_t &z);
     void readAccelRaw(int16_t &x, int16_t &y, int16_t &z);
 
 private:
-    drivers::i2c::I2C_Zynq& _i2c;  // Reference to I2C driver
+    drivers::i2c::I2C_Zynq& _i2c;
     
-    // Current configuration
     GyroFullScale currentGyroFS;
     AccFullScale currentAccelFS;
 
-    // Private helper methods
     uint8_t readRegister(uint8_t reg);
     void writeRegister(uint8_t reg, uint8_t value);
     void readRegisters(uint8_t reg, uint8_t* data, uint8_t length);

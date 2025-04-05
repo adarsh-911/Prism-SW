@@ -1,40 +1,32 @@
 #pragma once
+
 #include <cstdint>
+#include <string>
+#include <fcntl.h>
+#include <unistd.h>
+#include <sys/ioctl.h>
+#include <linux/spi/spidev.h>
 
 namespace drivers::spi {
 
-class SpiPsMio {
+class SpiPsDev {
 public:
-    SpiPsMio();
-    ~SpiPsMio();
+    SpiPsDev();
+    ~SpiPsDev();
 
-    // Initialize SPI on PS-MIO pins
-    bool initialize(uint32_t spiClockHz = 1000000); // Default: 1MHz
+    bool initialize(const std::string& device = "/dev/spidev0.0",
+                    uint32_t speedHz = 1000000,
+                    uint8_t mode = SPI_MODE_0,
+                    uint8_t bitsPerWord = 8);
 
-    // Transfer a single byte (full-duplex)
-    uint8_t transferByte(uint8_t data);
-
-    // Transfer multiple bytes (blocking)
-    void transfer(const uint8_t* txData, uint8_t* rxData, uint16_t length);
-
-    // Chip Select control
-    void csAssert();
-    void csDeassert();
-
-    // Delays (µs)
-    static void delayMicroseconds(uint32_t us);
+    bool transfer(const uint8_t* txData, uint8_t* rxData, uint16_t length);
+    uint8_t transferByte(uint8_t byte);
 
 private:
-    // PS-MIO Pin Configuration (adjust based on your hardware)
-    enum PsMioPins {
-        MIO_SPI_CS   = 7,   // Example: MIO7 = CS
-        MIO_SPI_MOSI = 8,    // Example: MIO8 = MOSI
-        MIO_SPI_MISO = 9,    // Example: MIO9 = MISO
-        MIO_SPI_SCK  = 10    // Example: MIO10 = SCK
-    };
-
-    bool _initialized = false;
-    uint32_t _spiClockHz;
+    int _spiFd;
+    uint32_t _speedHz;
+    uint8_t _mode;
+    uint8_t _bitsPerWord;
 };
 
 } // namespace drivers::spi

@@ -1,65 +1,54 @@
-#include "spi_ps_mio.hpp"
-#include <fcntl.h>      // open()
-#include <unistd.h>     // close(), usleep()
-#include <sys/ioctl.h>  // ioctl()
-#include <linux/spi/spidev.h>
+#include "SpiPsDev.hpp"
 #include <cstring>
 
 namespace drivers::spi {
 
-SpiPsMio::SpiPsMio() {}
+SpiPsDev::SpiPsDev()
+    : _spiFd(-1), _speedHz(1000000), _mode(SPI_MODE_0), _bitsPerWord(8) {}
 
-SpiPsMio::~SpiPsMio() {
-    // Cleanup if needed
+SpiPsDev::~SpiPsDev() {
+    if (_spiFd >= 0) {
+        close(_spiFd);
+    }
 }
 
-bool SpiPsMio::initialize(uint32_t spiClockHz) {
-    /* TODO: Configure PS-MIO pins for SPI in Zynq-7020
-     * Steps:
-     * 1. Open `/dev/spidevX.Y` (X=bus, Y=CS)
-     * 2. Set SPI mode (SPI_MODE_0)
-     * 3. Set max speed (spiClockHz)
-     * 4. Set MSB-first (SPI_LSB_FIRST = 0)
-     * 5. Verify success
-     */
-    _spiClockHz = spiClockHz;
-    _initialized = true;
-    return true; // Change based on actual init
+bool SpiPsDev::initialize(const std::string& device,
+                          uint32_t speedHz,
+                          uint8_t mode,
+                          uint8_t bitsPerWord) {
+    _speedHz = speedHz;
+    _mode = mode;
+    _bitsPerWord = bitsPerWord;
+
+    _spiFd = open(device.c_str(), O_RDWR);
+    if (_spiFd < 0) return false;
+
+    if (ioctl(_spiFd, SPI_IOC_WR_MODE, &_mode) < 0) return false;
+    if (ioctl(_spiFd, SPI_IOC_WR_BITS_PER_WORD, &_bitsPerWord) < 0) return false;
+    if (ioctl(_spiFd, SPI_IOC_WR_MAX_SPEED_HZ, &_speedHz) < 0) return false;
+
+    return true;
 }
 
-uint8_t SpiPsMio::transferByte(uint8_t data) {
-    uint8_t rxData = 0;
-    transfer(&data, &rxData, 1);
-    return rxData;
+bool SpiPsDev::transfer(const uint8_t* txData, uint8_t* rxData, uint16_t length) {
+    if (_spiFd < 0) return false;
+
+    struct spi_ioc_transfer tr = {
+        .tx_buf = reinterpret_cast<unsigned long>(txData),
+        .rx_buf = reinterpret_cast<unsigned long>(rxData),
+        .len = length,
+        .delay_usecs = 0,
+        .speed_hz = _speedHz,
+        .bits_per_word = _bitsPerWord,
+    };
+
+    return ioctl(_spiFd, SPI_IOC_MESSAGE(1), &tr) >= 0;
 }
 
-void SpiPsMio::transfer(const uint8_t* txData, uint8_t* rxData, uint16_t length) {
-    if (!_initialized) return;
-
-    /* TODO: Implement SPI transfer
-     * Steps:
-     * 1. Assert CS (low)
-     * 2. Wait ≥15 µs
-     * 3. For each byte:
-     *    a. Write MOSI, read MISO (MSB-first)
-     *    b. Wait ≥10 µs between bytes
-     * 4. Deassert CS (high)
-     * 5. Wait ≥25 µs before next transaction
-     */
+uint8_t SpiPsDev::transferByte(uint8_t byte) {
+    uint8_t rx = 0;
+    transfer(&byte, &rx, 1);
+    return rx;
 }
 
-void SpiPsMio::csAssert() {
-    // Set CS low (active)
-    delayMicroseconds(15); // Required delay
-}
-
-void SpiPsMio::csDeassert() {
-    // Set CS high (inactive)
-    delayMicroseconds(25); // Required delay
-}
-
-void SpiPsMio::delayMicroseconds(uint32_t us) {
-    usleep(us); // Linux delay (replace with HW timer if needed)
-}
-
-} // 
+} // namespace drivers::spi
