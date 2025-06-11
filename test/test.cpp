@@ -7,21 +7,33 @@
 
 #define USE_OPENGL_BACKEND
 #include <graphics/gp.hpp>
+#include "gl/obj_loader.hpp"
 
 int local_test()
 {
     gp::OpenGLDisplay display;
     display.init();
 
-    // triangle vertices
-    gp::vertex_buffer_t vertices = {
-        {{0.0f, 0.5f, 1.0f}, {0.0f, 0.0f}},
-        {{0.5f, -0.5f, 1.0f}, {0.0f, 1.0f}},
-        {{-0.5f, -0.5f, 1.0f}, {1.0f, 0.0f}}
-    };
 
-    // triangle indices
-    gp::index_buffer_t indices = {0, 1, 2};
+    // This code works! Can load models from obj files
+    
+    auto model_obj = gl::Model();
+    model_obj.from_file("../Prism-Assets/models/chair/chair.obj"); 
+
+    gp::vertex_buffer_t vertices = model_obj.vertices;
+    gp::index_buffer_t indices = model_obj.indices;
+
+
+
+    // // triangle vertices
+    // gp::vertex_buffer_t vertices = {
+    //     {{0.0f, 0.5f, 1.0f}, {0.0f, 0.0f}},
+    //     {{0.5f, -0.5f, 1.0f}, {0.0f, 1.0f}},
+    //     {{-0.5f, -0.5f, 1.0f}, {1.0f, 0.0f}}
+    // };
+
+    // // triangle indices
+    // gp::index_buffer_t indices = {0, 1, 2};
 
     // Create a camera
     gp::OpenGLCamera camera(60.0f, 800.0f / 600.0f, 0.1f, 100.0f);
