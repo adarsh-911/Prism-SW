@@ -4,6 +4,7 @@
 #include "../objLoader/obj_loader.h"
 #include "../shader/shader.h"
 #include "../clip/clip.h"
+#include "../clip/zClip.h"
 #include "texture.h"
 
 const int WIDTH = 600;
@@ -16,17 +17,72 @@ Vec3 normalizeToPixel(const Vec3& screenCoord) {
   return Vec3(x, y, z);
 }
 
-Vec3 find_barycentric(int x, int y, Vec3 v0, Vec3 v1, Vec3 v2) {
-  float px = x + 0.5f;
-  float py = y + 0.5f;
-  float w0 = 0, w1 = 0, w2 = 0;
-  float area = edgeFunc(v0, v1, v2);
-  if (area != 0) {
-    w0 = edgeFunc(Vec3(px, py, 1.0f), v1, v2)/area;
-    w1 = edgeFunc(Vec3(px, py, 1.0f), v2, v0)/area;
-    w2 = edgeFunc(Vec3(px, py, 1.0f), v0, v1)/area;
-  }
-  return Vec3(w0, w1, w2);
+Color bilinear_filtering(int w, int h, float u, float v, std::vector<Color>& texels) {
+  float tex_x = u * (w - 1);
+  float tex_y = v * (h - 1);
+
+  float fx = tex_x - floor(tex_x);
+  float fy = tex_y - floor(tex_y);
+  int x0 = static_cast<int>(floor(tex_x));
+  int y0 = static_cast<int>(floor(tex_y));
+  int x1 = std::min(x0 + 1, w - 1);
+  int y1 = std::min(y0 + 1, h - 1);
+
+  Color c00 = texels[y0 * w + x0];
+  Color c10 = texels[y0 * w + x1];
+  Color c01 = texels[y1 * w + x0];
+  Color c11 = texels[y1 * w + x1];
+
+  Vec3 c00f(static_cast<float>(c00.r), static_cast<float>(c00.g), static_cast<float>(c00.b));
+  Vec3 c10f(static_cast<float>(c10.r), static_cast<float>(c10.g), static_cast<float>(c10.b));
+  Vec3 c01f(static_cast<float>(c01.r), static_cast<float>(c01.g), static_cast<float>(c01.b));
+  Vec3 c11f(static_cast<float>(c11.r), static_cast<float>(c11.g), static_cast<float>(c11.b));
+
+  Vec3 colorf = 
+      c00f * (1 - fx) * (1 - fy) +
+      c10f * fx * (1 - fy) +
+      c01f * (1 - fx) * fy +
+      c11f * fx * fy;
+
+  Color color = {static_cast<u_char>(colorf.x), static_cast<u_char>(colorf.y), static_cast<u_char>(colorf.z)};
+  return color;
+}
+
+Color uv_rounding(int w, int h, float u, float v, std::vector<Color>& texels) {
+
+  Color color = texels[std::clamp(0, static_cast<int>(round(u*(w-1)) + round(v*(h-1))*w), static_cast<int>(texels.size()-1))];
+  return color;
+}
+
+Color extractColor (int modelInd, int triInd, Vec3 barycentric, float z) {
+  Ind idx = (modelTexCordsInd[modelInd]).idx[triInd];
+  std::vector<Vec2uv> texCords = (modelTexCords[modelInd]).texcoords;
+
+  Ind idx1 = (modelTriangleInd[modelInd]).idx[triInd];
+  std::vector<glm::vec4> vertices = (modelsCam[modelInd].vertices);
+
+  Vec3 ver0 = normalizeToPixel(Vec3(vertices[idx1.v0].x/vertices[idx1.v0].w, vertices[idx1.v0].y/vertices[idx1.v0].w, vertices[idx1.v0].z/vertices[idx1.v0].w));
+  Vec3 ver1 = normalizeToPixel(Vec3(vertices[idx1.v1].x/vertices[idx1.v1].w, vertices[idx1.v1].y/vertices[idx1.v1].w, vertices[idx1.v1].z/vertices[idx1.v1].w));
+  Vec3 ver2 = normalizeToPixel(Vec3(vertices[idx1.v2].x/vertices[idx1.v2].w, vertices[idx1.v2].y/vertices[idx1.v2].w, vertices[idx1.v2].z/vertices[idx1.v2].w));
+
+  //barycentric = find_barycentric(x, y, ver0, ver1, ver2);
+
+  int w =  modelTexColors[modelInd].width;
+  int h = modelTexColors[modelInd].height;
+
+  Vec2uv v0 = texCords[idx.v0];
+  Vec2uv v1 = texCords[idx.v1];
+  Vec2uv v2 = texCords[idx.v2];
+  
+  float u = (barycentric.x*v0.u/ver0.z + barycentric.y*v1.u/ver1.z + barycentric.z*v2.u/ver2.z)*z;
+  float v = (barycentric.x*v0.v/ver0.z + barycentric.y*v1.v/ver1.z + barycentric.z*v2.v/ver2.z)*z;
+
+  u = std::clamp(0.0f, u, 1.0f);
+  v = std::clamp(0.0f, v, 1.0f);
+
+  //Color color = uv_rounding(w, h, u, v, modelTexColors[modelInd].pixels);
+  Color color = bilinear_filtering(w, h, u, v, modelTexColors[modelInd].pixels);
+  return color;
 }
 
 std::vector<Color> loadTexture (const char* filename, int& width, int& height) {
@@ -44,37 +100,4 @@ std::vector<Color> loadTexture (const char* filename, int& width, int& height) {
   }
   stbi_image_free(data);
   return pixels;
-}
-
-Color extractColor (int modelInd, int triInd, Vec3 barycentric, int x, int y, float z, int i) {
-  Ind idx = (modelTexCordsInd[modelInd]).idx[triInd];
-  std::vector<Vec2uv> texCords = (modelTexCords[modelInd]).texcoords;
-
-  Ind idx1 = (modelTriangleInd[modelInd]).idx[triInd];
-  std::vector<glm::vec4> vertices = (modelsCam[modelInd].vertices);
-
-  Vec3 ver0 = normalizeToPixel(Vec3(vertices[idx1.v0].x/vertices[idx.v0].w, vertices[idx1.v0].y/vertices[idx.v0].w, vertices[idx1.v0].z/vertices[idx.v0].w));
-  Vec3 ver1 = normalizeToPixel(Vec3(vertices[idx1.v1].x/vertices[idx.v1].w, vertices[idx1.v1].y/vertices[idx.v1].w, vertices[idx1.v1].z/vertices[idx.v1].w));
-  Vec3 ver2 = normalizeToPixel(Vec3(vertices[idx1.v2].x/vertices[idx.v2].w, vertices[idx1.v2].y/vertices[idx.v2].w, vertices[idx1.v2].z/vertices[idx.v2].w));
-
-  if (clipStatus[i]) barycentric = find_barycentric(x, y, ver0, ver1, ver2);
-
-  int w =  modelTexColors[modelInd].width;
-  int h = modelTexColors[modelInd].height;
-
-  Vec2uv v0 = texCords[idx.v0];
-  Vec2uv v1 = texCords[idx.v1];
-  Vec2uv v2 = texCords[idx.v2];
-  
-  float u = (barycentric.x*v0.u/ver0.z + barycentric.y*v1.u/ver1.z + barycentric.z*v2.u/ver2.z)*z;
-  float v = (barycentric.x*v0.v/ver0.z + barycentric.y*v1.v/ver1.z + barycentric.z*v2.v/ver2.z)*z;
-
-  u = std::clamp(0.0f, u, 1.0f);
-  v = std::clamp(0.0f, v, 1.0f);
-  
-  int size = modelTexColors[modelInd].pixels.size();
-
-  Color color = modelTexColors[modelInd].pixels[std::clamp(0, static_cast<int>(round(u*(w-1)) + round(v*(h-1))*w), size -1)];
-  
-  return color;
 }
