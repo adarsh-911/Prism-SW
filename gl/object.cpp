@@ -64,6 +64,26 @@ namespace gl
     {
         return this->boundingBox;
     }
+    glm::vec3 Object::getCollisionNormal(const glm::vec3& point) const 
+    {
+        glm::AABB box = getBoundingBox();
+        glm::vec3 min = box.getMin();
+        glm::vec3 max = box.getMax();
+        
+        glm::vec3 center = (min + max) * 0.5f;
+        glm::vec3 delta = point - center;
+
+        glm::vec3 extents = (max - min) * 0.5f;
+        glm::vec3 absDelta = glm::abs(delta);
+
+        if (absDelta.x > absDelta.y && absDelta.x > absDelta.z) {
+            return glm::vec3((delta.x > 0) ? 1.0f : -1.0f, 0.0f, 0.0f);
+        } else if (absDelta.y > absDelta.x && absDelta.y > absDelta.z) {
+            return glm::vec3(0.0f, (delta.y > 0) ? 1.0f : -1.0f, 0.0f);
+        } else {
+            return glm::vec3(0.0f, 0.0f, (delta.z > 0) ? 1.0f : -1.0f);
+    }
+    }
     void Object::draw() const
     {
         gp::uniform_t uniform;
@@ -72,4 +92,5 @@ namespace gl
 
         this->model->draw(uniform);
     }
+    
 }

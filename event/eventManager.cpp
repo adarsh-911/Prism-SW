@@ -47,49 +47,65 @@ enum EventType{
     FALL                        // Falls from 2nd to 1st or basement, or 1st to basement
 };
 
+enum EventTarget {
+    PLAYER,
+    ENTITY,
+    SECOND_ENTITY,
+    UI,
+    SOUND_SYSTEM,
+    COUNT
+};
+
 struct Event {
     EventType type;
+    EventTarget target;
     float timestamp;
 
-    // Optional data carried by the event
-    std::optional<Position> position;
-    std::optional<std::string> itemName;
-    std::optional<int> intValue; // For ammo count etc.
-    std::optional<bool> flagValue; // Used/crouched/stun/etc.
-    std::optional<float> floatValue; // For stun duration/cooldowns/multiplier
+    // Data carried by the event
+    Position position;
+    std::string itemName;
+    int intValue; // For ammo count etc.
+    bool flagValue; // Used/crouched/stun/etc.
+    float floatValue; // For stun duration/cooldowns/multiplier
 };
 
 class EventManager {
+private:
+    std::array<std::queue<Event>, static_cast<size_t>(EventTarget::COUNT)> queues;
+    float currentTime = 0.0f;
+
 public:
-    using Listener = std::function<void(const Event&)>;
+    void update(float deltaTime) {
+        currentTime += deltaTime;
+    }
+
+    void addEvent(const Event& e) {
+        Event event = e;
+        event.timestamp = currentTime;
+        queues[static_cast<size_t>(event.target)].push(event);
+    }
+
+    // Dispatch all events by giving handlers for each target
+    void dispatch(
+        const std::function<void(const Event&)>& playerHandler,
+        const std::function<void(const Event&)>& entityHandler,
+        const std::function<void(const Event&)>& secondEntityHandler,
+        const std::function<void(const Event&)>& uiHandler,
+        const std::function<void(const Event&)>& soundHandler
+    ) {
+        dispatchQueue(EventTarget::PLAYER, playerHandler);
+        dispatchQueue(EventTarget::ENTITY, entityHandler);
+        dispatchQueue(EventTarget::SECOND_ENTITY, secondEntityHandler);
+        dispatchQueue(EventTarget::UI, uiHandler);
+        dispatchQueue(EventTarget::SOUND_SYSTEM, soundHandler);
+    }
 
 private:
-    std::queue<Event> eventQueue;
-    std::unordered_map<EventType, std::vector<Listener>> listeners;
-
-public:
-    // Add event to the queue
-    void addEvent(const Event& event) {
-        eventQueue.push(event);
-    }
-
-    // Subscribe a listener to an event type
-    void subscribe(EventType type, Listener listener) {
-        listeners[type].push_back(listener);
-    }
-
-    // Poll and dispatch all events to the appropriate listeners
-    void pollEvents() {
-        while (!eventQueue.empty()) {
-            Event event = eventQueue.front();
-            eventQueue.pop();
-
-            auto it = listeners.find(event.type);
-            if (it != listeners.end()) {
-                for (const auto& listener : it->second) {
-                    listener(event);
-                }
-            }
+    void dispatchQueue(EventTarget target, const std::function<void(const Event&)>& handler) {
+        auto& q = queues[static_cast<size_t>(target)];
+        while (!q.empty()) {
+            handler(q.front());
+            q.pop();
         }
     }
 };

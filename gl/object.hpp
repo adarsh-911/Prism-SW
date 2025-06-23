@@ -73,6 +73,9 @@ namespace gl
             // get the bounding box of the object
             glm::AABB getBoundingBox() const override;
 
+            // get the normal of the object at a point
+            glm::vec3 getCollisionNormal(const glm::vec3& point) const;
+
             // draw the object
             void draw() const;
 
