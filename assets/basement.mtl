@@ -1,0 +1,122 @@
+# Blender 4.2.1 LTS MTL File: 'basement.blend'
+# www.blender.org
+
+newmtl Material
+Ns 250.000000
+Ka 1.000000 1.000000 1.000000
+Ks 0.500000 0.500000 0.500000
+Ke 0.000000 0.000000 0.000000
+Ni 1.450000
+d 1.000000
+illum 2
+map_Kd /Users/musicalmimmi/Desktop/IITH/Semester 4/EE2405-ESDP/Final Project/Prism/Prism-Assets/textures/wood_floor.jpeg
+
+newmtl Material.001
+Ns 250.000000
+Ka 1.000000 1.000000 1.000000
+Ks 0.500000 0.500000 0.500000
+Ke 0.000000 0.000000 0.000000
+Ni 1.500000
+d 1.000000
+illum 2
+map_Kd /Users/musicalmimmi/Desktop/IITH/Semester 4/EE2405-ESDP/Final Project/Prism/Prism-Assets/textures/pizza_left.jpeg
+
+newmtl Material.002
+Ns 360.000000
+Ka 1.000000 1.000000 1.000000
+Kd 0.800000 0.800000 0.800000
+Ks 0.500000 0.500000 0.500000
+Ke 0.000000 0.000000 0.000000
+Ni 1.000000
+d 1.000000
+illum 2
+
+newmtl Material.003
+Ns 250.000000
+Ka 1.000000 1.000000 1.000000
+Ks 0.500000 0.500000 0.500000
+Ke 0.000000 0.000000 0.000000
+Ni 1.500000
+d 1.000000
+illum 2
+map_Kd /Users/musicalmimmi/Desktop/IITH/Semester 4/EE2405-ESDP/Final Project/Prism/Prism-Assets/textures/abandoned_wall.jpeg
+
+newmtl Material.004
+Ns 250.000000
+Ka 1.000000 1.000000 1.000000
+Ks 0.500000 0.500000 0.500000
+Ke 0.000000 0.000000 0.000000
+Ni 1.500000
+d 1.000000
+illum 2
+map_Kd /Users/musicalmimmi/Desktop/IITH/Semester 4/EE2405-ESDP/Final Project/Prism/Prism-Assets/textures/wood1.jpeg
+
+newmtl Material.005
+Ns 250.000000
+Ka 1.000000 1.000000 1.000000
+Ks 0.500000 0.500000 0.500000
+Ke 0.000000 0.000000 0.000000
+Ni 1.500000
+d 1.000000
+illum 2
+map_Kd /Users/musicalmimmi/Desktop/IITH/Semester 4/EE2405-ESDP/Final Project/Prism/Prism-Assets/textures/rusted_metal/Poliigon_MetalRust_7642_BaseColor.jpg
+
+newmtl Material.006
+Ns 250.000000
+Ka 1.000000 1.000000 1.000000
+Ks 0.500000 0.500000 0.500000
+Ke 0.000000 0.000000 0.000000
+Ni 1.500000
+d 1.000000
+illum 2
+map_Kd /Users/musicalmimmi/Desktop/IITH/Semester 4/EE2405-ESDP/Final Project/Prism/Prism-Assets/textures/wood1.jpeg
+
+newmtl Material.007
+Ns 250.000000
+Ka 1.000000 1.000000 1.000000
+Ks 0.500000 0.500000 0.500000
+Ke 0.000000 0.000000 0.000000
+Ni 1.500000
+d 1.000000
+illum 2
+map_Kd /Users/musicalmimmi/Desktop/IITH/Semester 4/EE2405-ESDP/Final Project/Prism/Prism-Assets/textures/metal1.jpeg
+
+newmtl Material.008
+Ns 250.000000
+Ka 1.000000 1.000000 1.000000
+Ks 0.500000 0.500000 0.500000
+Ke 0.000000 0.000000 0.000000
+Ni 1.500000
+d 1.000000
+illum 2
+map_Kd /Users/musicalmimmi/Desktop/IITH/Semester 4/EE2405-ESDP/Final Project/Prism/Prism-Assets/textures/metal1.jpeg
+
+newmtl Material.009
+Ns 250.000000
+Ka 1.000000 1.000000 1.000000
+Ks 0.500000 0.500000 0.500000
+Ke 0.000000 0.000000 0.000000
+Ni 1.500000
+d 1.000000
+illum 2
+map_Kd /Users/musicalmimmi/Desktop/IITH/Semester 4/EE2405-ESDP/Final Project/Prism/Prism-Assets/textures/metal1.jpeg
+
+newmtl Material.010
+Ns 250.000000
+Ka 1.000000 1.000000 1.000000
+Ks 0.500000 0.500000 0.500000
+Ke 0.000000 0.000000 0.000000
+Ni 1.500000
+d 1.000000
+illum 2
+map_Kd /Users/musicalmimmi/Desktop/IITH/Semester 4/EE2405-ESDP/Final Project/Prism/Prism-Assets/textures/pizza_left.jpeg
+
+newmtl Material.011
+Ns 250.000000
+Ka 1.000000 1.000000 1.000000
+Ks 0.500000 0.500000 0.500000
+Ke 0.000000 0.000000 0.000000
+Ni 1.500000
+d 1.000000
+illum 2
+map_Kd /Users/musicalmimmi/Desktop/IITH/Semester 4/EE2405-ESDP/Final Project/Prism/Prism-Assets/textures/pizza_left.jpeg
