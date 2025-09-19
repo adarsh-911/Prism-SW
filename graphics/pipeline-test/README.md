@@ -1,13 +1,21 @@
 # Basic 3D Graphics Pipeline
 
 ## Build and Run
-Run the executable in this format
+Clean all object files
+```bash
+./clean
+```
+To load the models
+```bash
+./run loadmodels
+```
+Then run the executable in this format
 ```bash
 ./run {position} {direction}
 ```
 Example:
 ```bash
-./run 0.0 0.0 2.5 0.0 0.0 -1.0
+./run 0.0 1.0 22.0 0.0 0.0 -1.0
 ```
 View the rendered output:
 ```bash
@@ -17,24 +25,9 @@ feh output.png
 
 ## Implementation
 
-### Features
-
--  **OBJ Loader**: Parses geometry, texture coordinates, and normals from `.obj` files in `all_models/`.
--  **Vertex Shader**: Transforms vertices from model space → world space → camera space → clip space.
--  **Camera System**: Custom camera transformation with configurable position and orientation.
--  **Perspective Projection**: Implemented using `glm::perspective`.
--  **Clipping**: Liang-Barsky algorithm applied in screen space to discard triangles outside the visible frustum.
--  **NDC Conversion**: Transforms clip space coordinates to normalized device coordinates (NDC).
--  **Rasterizer**: Triangle rasterization using edge functions and barycentric coordinates.
--  **Z-Buffer test**: Discards the pixel with larger z during overlap.
--  **Fragment Shader**:
-  - Interpolates texture coordinates and normals per-pixel.
-  - Applies Phong lighting model.
-  - Supports texture mapping using `stb_image`.
--  **Texture Mapping**: Per-pixel color sampling method from loaded images.
--  **Image Output**: Final framebuffer is saved as `output.png`.
-
 ### Pipeline Overview
+
+![Pipeline](figs/pipeline.png)
 
 1. **Model Loading**
    - Loads `.obj` files and textures from `all_models/` directory.
@@ -56,8 +49,8 @@ feh output.png
    - Barycentric coordinates are used to interpolate depth, UVs, and normals.
 
 5. **Fragment Shading**
-   - Per-fragment lighting is computed using surface normals and a simple light model.
-   - Textures are sampled with UV interpolation.
+   - Per-fragment lighting is computed using surface normals and a simple distance based light model.
+   - Textures are sampled with UV perspective interpolation (Bilinear filtering).
    - Final color is written to the framebuffer.
 
 6. **Output**
