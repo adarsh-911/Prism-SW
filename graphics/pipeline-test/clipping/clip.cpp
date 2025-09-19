@@ -1,5 +1,6 @@
 #include "../modelLoader/loadModels.hpp"
 #include "clip.hpp"
+#include "../vertexTransform/transformScreen.hpp"
 
 std::vector<VBuff> VOA;
 
@@ -86,6 +87,8 @@ void clipTriangle (const glm::vec4& v0, const glm::vec4& v1, const glm::vec4& v2
   glm::vec3 v0_ndc = {v0.x/v0.w, v0.y/v0.w, v0.z/v0.w};
   glm::vec3 v1_ndc = {v1.x/v1.w, v1.y/v1.w, v1.z/v1.w};
   glm::vec3 v2_ndc = {v2.x/v2.w, v2.y/v2.w, v2.z/v2.w};
+
+  //printv(v0_ndc, v1_ndc, v2_ndc);
 
   int check = (int)clip1.status + (int)clip2.status + (int)clip3.status;
 
@@ -253,18 +256,10 @@ void clipTriangle (const glm::vec4& v0, const glm::vec4& v1, const glm::vec4& v2
 }
 
 void clip() {
-  for (const modelBuff& transModel : cameraSpace) {
-    for (const Model& model : models) {
-      if (model.name == transModel.name) {
-        int triangleIdx = 0;
-        for (const idx& triIdx : model.getIndices(1)) {
-          glm::vec4 ver1 = transModel.vertices[triIdx.a];
-          glm::vec4 ver2 = transModel.vertices[triIdx.b];
-          glm::vec4 ver3 = transModel.vertices[triIdx.c];
-          clipTriangle(ver1, ver2, ver3, transModel.color, transModel.idx, triangleIdx);
-          triangleIdx++;
-        }
-      }
-    }
+  for(ZBuff& v : screenSpace_zclip) {
+    //glm::vec4 v0 = WORLD_TO_SCREEN * v.v0;
+    //glm::vec4 v1 = WORLD_TO_SCREEN * v.v1;
+    //glm::vec4 v2 = WORLD_TO_SCREEN * v.v2;
+    clipTriangle(v.v0, v.v1, v.v2, v.color, v.modelIdx, v.triIdx);
   }
 }
